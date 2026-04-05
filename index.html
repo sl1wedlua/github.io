@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sl1wed.Lua</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+
+html,body{
+    width:100%;
+    height:100%;
+    background:#000;
+    color:white;
+    font-family:Arial;
+    overflow:hidden;
+}
+
+canvas{
+    position:fixed;
+    top:0;
+    left:0;
+    z-index:0;
+}
+
+.topbar{
+    position:fixed;
+    top:0;
+    width:100%;
+    height:3px;
+    background:linear-gradient(90deg,#6a00ff,#a64dff);
+}
+
+.nav{
+    position:absolute;
+    top:15px;
+    left:50%;
+    transform:translateX(-50%);
+    z-index:5;
+}
+
+.nav button{
+    background:transparent;
+    border:1px solid transparent;
+    color:#aaa;
+    margin:0 10px;
+    padding:6px 14px;
+    cursor:pointer;
+    border-radius:6px;
+}
+
+.nav button.active{
+    border:1px solid white;
+    color:white;
+}
+
+.enter{animation:enterAnim 0.6s ease forwards;}
+@keyframes enterAnim{
+    0%{opacity:0;transform:translate(-50%,20%) scale(0.8);}
+    100%{opacity:1;transform:translate(-50%,-50%) scale(1);}
+}
+
+.exit{animation:exitAnim 0.5s ease forwards;}
+@keyframes exitAnim{
+    0%{opacity:1;transform:translate(-50%,-50%) scale(1);}
+    100%{opacity:0;transform:translate(-50%,80%) scale(0.9);}
+}
+
+.center{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    text-align:center;
+}
+
+.title{
+    font-size:55px;
+    font-weight:bold;
+    background:linear-gradient(90deg,#fff,#888,#fff);
+    background-size:200%;
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+    animation:shine 3s linear infinite;
+}
+
+@keyframes shine{
+    0%{background-position:-200%;}
+    100%{background-position:200%;}
+}
+
+.subtitle{color:#888;}
+
+.products{
+    position:absolute;
+    top:70px;
+    left:20px;
+    z-index:5;
+}
+
+.product{
+    padding:14px;
+    width:220px;
+    background:#0a0a0a;
+    border:1px solid #222;
+    border-radius:10px;
+    cursor:pointer;
+}
+
+.product span{
+    float:right;
+    color:#888;
+}
+
+.panel{
+    position:fixed;
+    top:0;
+    right:-320px;
+    width:320px;
+    height:100%;
+    background:#050505;
+    border-left:1px solid #111;
+    padding:20px;
+    transition:0.3s;
+    z-index:10;
+}
+
+.panel.active{right:0;}
+
+.close{
+    position:absolute;
+    top:10px;
+    right:15px;
+    cursor:pointer;
+    color:#888;
+}
+
+.pay button{
+    width:100%;
+    padding:10px;
+    margin-top:8px;
+    border-radius:6px;
+    border:1px solid #222;
+    background:#0a0a0a;
+    color:#aaa;
+    cursor:pointer;
+}
+
+.pay button.active{
+    border-color:white;
+    color:white;
+}
+
+.buy{
+    margin-top:15px;
+    padding:12px;
+    width:100%;
+    border:none;
+    border-radius:6px;
+    background:white;
+    color:black;
+    font-weight:bold;
+    display:none;
+}
+
+.confirm{
+    position:fixed;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    background:linear-gradient(180deg,#0a0a0a,#000);
+    border:1px solid #222;
+    box-shadow:0 0 30px rgba(128,0,255,0.2);
+    padding:30px;
+    border-radius:10px;
+    display:none;
+    z-index:20;
+    text-align:center;
+}
+
+.confirm button{
+    margin:5px;
+    padding:10px 15px;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+.yes{background:#555;color:#aaa;}
+.yes.active{background:linear-gradient(90deg,#6a00ff,#a64dff);color:white;}
+.no{background:#222;color:white;}
+</style>
+</head>
+
+<body>
+
+<canvas id="bg"></canvas>
+<div class="topbar"></div>
+
+<div class="nav">
+<button class="active" onclick="showTab('main',this)">Main</button>
+<button onclick="showTab('products',this)">Products</button>
+</div>
+
+<div id="main">
+<div class="center enter">
+<div class="title">Sl1wed.Lua</div>
+<div class="subtitle">Boost Your HVH Experience.</div>
+</div>
+</div>
+
+<div id="products" style="display:none;">
+<div class="products">
+<div class="product" onclick="openPanel()">Sl1wedLua <span>5.99$</span></div>
+</div>
+</div>
+
+<div id="panel" class="panel">
+<div class="close" onclick="closePanel()">X</div>
+<h2>Sl1wedLua</h2>
+<p>$5.99</p>
+
+<div class="pay">
+<button onclick="select(this)">Card</button>
+<button onclick="select(this)">PayPal</button>
+<button onclick="select(this)">CashApp</button>
+<button onclick="select(this)">Robux (10,000Rbx)</button>
+</div>
+
+<p id="selectedText" style="margin-top:10px;color:#888;">No payment selected</p>
+<button id="buy" class="buy" onclick="openConfirm()">Buy</button>
+</div>
+
+<div id="confirm" class="confirm">
+<h2>Are you sure?</h2><br>
+<button id="yes" class="yes" disabled>Yes (3)</button>
+<button class="no" onclick="hideUI('confirm')">No</button>
+</div>
+
+<!-- PAYPAL -->
+<div id="payment" class="confirm">
+<h2>Payment</h2><br>
+<p>Email:</p>
+<b style="color:#a64dff;">btwdodson@gmail.com</b><br><br>
+<p>Select:</p>
+<b>Friends And Family</b><br><br>
+<p style="color:red;font-size:13px;">WARNING IF U DONT DO THIS STEP YOUR PRODUCT WONT BE DELIVERED!!!!</p><br>
+<p>Your Code:</p>
+<div id="codeBox" style="color:#a64dff;font-weight:bold;"></div>
+<button class="buy" style="display:block;" onclick="finishPayment()">Accept</button>
+</div>
+
+<div id="thanks" class="confirm">
+<h2>Thank You For Purchasing Sl1wed.Lua</h2><br>
+<p>Your Key And Script Will Be Delivered To Your PayPal Email</p><br>
+<button class="yes active" onclick="hideUI('thanks')">Continue</button>
+</div>
+
+<!-- ROBUX -->
+<div id="robuxPayment" class="confirm">
+<h2>Payment</h2><br>
+
+<a href="https://www.roblox.com/game-pass/1785038135/10ks" target="_blank" style="color:#a64dff;">
+https://www.roblox.com/game-pass/1785038135/10ks
+</a>
+
+<br><br>
+
+<p style="font-size:13px;">
+READ FIRST BEFORE BUYING!!!<br><br>
+If u purchased the gamepass send a screenshot of the purchase to this email 
+<b style="color:#a64dff;">btwdodson@gmail.com</b><br><br>
++ u need to give us your username in that email<br><br>
+if u dont do that your product <u>wont be delivered</u>
+</p>
+
+<button class="buy" style="display:block;" onclick="robuxDone()">I did everything</button>
+</div>
+
+<div id="robuxFinal" class="confirm">
+<p>if u have any questions join our discord server<br><br>
+<a href="https://discord.gg/wZ4kCZaGFr" target="_blank" style="color:#a64dff;">
+https://discord.gg/wZ4kCZaGFr
+</a>
+</p>
+<br>
+<button class="yes active" onclick="hideUI('robuxFinal')">OKII I WILL :D</button>
+</div>
+
+<script>
+
+let selectedMethod="";
+
+/* GLOBAL UI SYSTEM */
+function showUI(id){
+    let el=document.getElementById(id);
+    el.style.display="block";
+    el.classList.remove("exit");
+    el.classList.add("enter");
+}
+
+function hideUI(id){
+    let el=document.getElementById(id);
+    el.classList.remove("enter");
+    el.classList.add("exit");
+
+    setTimeout(()=>{el.style.display="none";},500);
+}
+
+/* SELECT */
+function select(el){
+document.querySelectorAll(".pay button").forEach(b=>b.classList.remove("active"));
+el.classList.add("active");
+selectedMethod=el.innerText;
+document.getElementById("selectedText").innerText="Selected: "+selectedMethod;
+document.getElementById("buy").style.display="block";
+}
+
+/* CONFIRM */
+function openConfirm(){
+let y=document.getElementById("yes");
+showUI("confirm");
+
+let time=3;
+y.innerText="Yes ("+time+")";
+y.disabled=true;
+
+let interval=setInterval(()=>{
+time--;
+y.innerText="Yes ("+time+")";
+if(time<=0){
+clearInterval(interval);
+y.disabled=false;
+y.classList.add("active");
+}
+},1000);
+}
+
+/* YES */
+document.getElementById("yes").onclick=function(){
+hideUI("confirm");
+
+if(selectedMethod==="PayPal") setTimeout(openPayment,300);
+if(selectedMethod.includes("Robux")) setTimeout(openRobux,300);
+};
+
+/* PAYPAL */
+function openPayment(){
+showUI("payment");
+
+let code="K";
+for(let i=0;i<8;i++){code+=Math.floor(Math.random()*10);}
+code+="B";
+
+document.getElementById("codeBox").innerText=code;
+}
+
+function finishPayment(){
+hideUI("payment");
+setTimeout(()=>showUI("thanks"),300);
+}
+
+/* ROBUX */
+function openRobux(){
+showUI("robuxPayment");
+}
+
+function robuxDone(){
+hideUI("robuxPayment");
+setTimeout(()=>showUI("robuxFinal"),300);
+}
+
+/* PANEL */
+function openPanel(){document.getElementById("panel").classList.add("active");}
+function closePanel(){document.getElementById("panel").classList.remove("active");}
+
+/* TABS */
+function showTab(tab,btn){
+document.getElementById("main").style.display="none";
+document.getElementById("products").style.display="none";
+document.getElementById(tab).style.display="block";
+
+document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));
+btn.classList.add("active");
+}
+
+/* PARTICLES */
+const canvas=document.getElementById("bg");
+const ctx=canvas.getContext("2d");
+
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
+
+let particles=[];
+for(let i=0;i<80;i++){
+particles.push({
+x:Math.random()*canvas.width,
+y:Math.random()*canvas.height,
+r:Math.random()*2,
+dx:(Math.random()-0.5)*0.5,
+dy:(Math.random()-0.5)*0.5
+});
+}
+
+function draw(){
+ctx.clearRect(0,0,canvas.width,canvas.height);
+ctx.fillStyle="rgba(150,0,255,0.5)";
+
+particles.forEach(p=>{
+ctx.beginPath();
+ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+ctx.fill();
+
+p.x+=p.dx;
+p.y+=p.dy;
+
+if(p.x<0||p.x>canvas.width)p.dx*=-1;
+if(p.y<0||p.y>canvas.height)p.dy*=-1;
+});
+
+requestAnimationFrame(draw);
+}
+draw();
+
+</script>
+
+</body>
+</html>
