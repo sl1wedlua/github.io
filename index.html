@@ -107,6 +107,23 @@ canvas{
     cursor:pointer;
 }
 
+/* ICON */
+.product-icon{
+    margin-top:10px;
+    text-align:center;
+}
+
+.product-icon img{
+    width:40px;
+    opacity:0.8;
+    transition:0.3s;
+}
+
+.product:hover .product-icon img{
+    opacity:1;
+    transform:scale(1.1);
+}
+
 .product span{
     float:right;
     color:#888;
@@ -211,7 +228,14 @@ canvas{
 
 <div id="products" style="display:none;">
 <div class="products">
-<div class="product" onclick="openPanel()">Sl1wedLua <span>5.99$</span></div>
+<div class="product" onclick="openPanel()">
+Sl1wedLua <span>5.99$</span>
+
+<div class="product-icon">
+<img src="https://w7.pngwing.com/pngs/687/348/png-transparent-jira-logos-and-brands-line-filled-icon.png">
+</div>
+
+</div>
 </div>
 </div>
 
@@ -291,20 +315,19 @@ https://discord.gg/wZ4kCZaGFr
 
 let selectedMethod="";
 
-/* GLOBAL UI SYSTEM */
+/* UI SYSTEM */
 function showUI(id){
-    let el=document.getElementById(id);
-    el.style.display="block";
-    el.classList.remove("exit");
-    el.classList.add("enter");
+let el=document.getElementById(id);
+el.style.display="block";
+el.classList.remove("exit");
+el.classList.add("enter");
 }
 
 function hideUI(id){
-    let el=document.getElementById(id);
-    el.classList.remove("enter");
-    el.classList.add("exit");
-
-    setTimeout(()=>{el.style.display="none";},500);
+let el=document.getElementById(id);
+el.classList.remove("enter");
+el.classList.add("exit");
+setTimeout(()=>{el.style.display="none";},500);
 }
 
 /* SELECT */
@@ -336,7 +359,6 @@ y.classList.add("active");
 },1000);
 }
 
-/* YES */
 document.getElementById("yes").onclick=function(){
 hideUI("confirm");
 
